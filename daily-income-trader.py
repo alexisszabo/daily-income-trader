@@ -29,7 +29,7 @@ client = Client.create_with_api_token(
 )
 
 methods = [
-    MailboxQuery(filter=MailboxQueryFilterCondition(name="Inbox")),
+    MailboxQuery(filter=MailboxQueryFilterCondition(name=os.environ["JMAP_FOLDER_NAME_DIT"])),
     MailboxGet(ids=Ref("/ids")),
 ]
 
