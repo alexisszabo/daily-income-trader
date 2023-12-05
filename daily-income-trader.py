@@ -1,13 +1,16 @@
 # https://github.com/smkent/waffles/blob/70c9d32522adea456216b5f95e541dd9f092e4ba/wafflesbot/jmap.py#L349-L353
 
 import os
-
+from datetime import datetime
 from jmapc import (
     Client,
     Ref,
 )
 
 from jmapc.methods import (
+    EmailGet,
+    EmailGetResponse,
+    EmailQuery,
     MailboxChanges,
     MailboxChangesResponse,
     MailboxGet,
@@ -20,9 +23,9 @@ from jmapc.methods import (
     MailboxSetResponse,
 )
 from jmapc.models import (
+    EmailQueryFilterCondition,
     MailboxQueryFilterCondition,
 )
-
 
 client = Client.create_with_api_token(
     host=os.environ["JMAP_HOST"], api_token=os.environ["JMAP_API_TOKEN_DIT"]
@@ -32,7 +35,6 @@ methods = [
     MailboxQuery(filter=MailboxQueryFilterCondition(name=os.environ["JMAP_FOLDER_NAME_DIT"])),
     MailboxGet(ids=Ref("/ids")),
 ]
-
 
 # Call JMAP API with the prepared request
 results = client.request(methods)
@@ -60,6 +62,28 @@ print(
     f"This mailbox has {mailbox.total_emails} emails, "
     f"{mailbox.unread_emails} of which are unread"
 )
+
+# Only check for todays emails
+after = datetime.today().replace(hour=0, minute=0, second=0);
+
+# Get the email
+methods = [
+  EmailQuery(
+    filter=EmailQueryFilterCondition(
+      in_mailbox=mailbox.id,
+      after=after,
+    )
+  ),
+  EmailGet(
+    ids=Ref("/ids")
+  )
+]
+results = client.request(methods)
+print(results)
+assert isinstance(results[1].response, EmailGetResponse)
+mail = results[1].response
+
+print(mail.data[0].text_body)
 
 # Example output:
 #
