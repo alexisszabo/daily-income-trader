@@ -1,6 +1,7 @@
 # https://github.com/smkent/waffles/blob/70c9d32522adea456216b5f95e541dd9f092e4ba/wafflesbot/jmap.py#L349-L353
 
 import os
+import re
 from datetime import datetime
 from jmapc import (
     Client,
@@ -57,11 +58,11 @@ mailboxes = method_2_result_data.data
 mailbox = mailboxes[0]
 
 # Print some information about the mailbox
-print(f"Found the mailbox named {mailbox.name} with ID {mailbox.id}")
-print(
-    f"This mailbox has {mailbox.total_emails} emails, "
-    f"{mailbox.unread_emails} of which are unread"
-)
+#print(f"Found the mailbox named {mailbox.name} with ID {mailbox.id}")
+#print(
+#    f"This mailbox has {mailbox.total_emails} emails, "
+#    f"{mailbox.unread_emails} of which are unread"
+#)
 
 # Only check for todays emails
 after = datetime.today().replace(hour=0, minute=0, second=0);
@@ -75,15 +76,52 @@ methods = [
     )
   ),
   EmailGet(
-    ids=Ref("/ids")
+    ids=Ref("/ids"),
+    fetch_all_body_values=True
   )
 ]
 results = client.request(methods)
-print(results)
 assert isinstance(results[1].response, EmailGetResponse)
-mail = results[1].response
+emails = results[1].response
+n_emails = len(emails.data)
 
-print(mail.data[0].text_body)
+if (n_emails == 1):
+  email = emails.data[0]
+  text_body = email.body_values['1'].value
+
+  ticker = ''
+  signal_price = 0.0 
+  target_price = 0.0
+  stop_loss_price = 0.0 
+
+  for line in text_body.splitlines():
+    match = re.search('Today’s Daily Market Profit Alerts is \\$([A-z]+)', line) 
+    if match:
+      ticker = match.group(1)
+
+    match = re.search('^Signal Price: \\$([0-9.])', line)
+    if match:
+      signal_price = float(match.group(1))
+
+    match = re.search('^Target Price: \\$([0-9.])', line)
+    if match:
+      target_price = float(match.group(1))
+
+    match = re.search('^Stop Loss Price: \\$([0-9.])', line)
+    if match:
+      stop_loss_price = float(match.group(1))
+
+  if ticker != '' and signal_price > 0 and target_price > 0 and stop_loss_price > 0:
+    print("Parsed Today's Daily Profits Alert Email")
+    print(f"Ticker: ${ticker}")
+    print(f"Signal Price: ${signal_price}")
+    print(f"Target Price: ${target_price}")
+    print(f"Stop Loss Price: ${stop_loss_price}")
+
+elif (n_emails > 0):
+  print('Found more emails than expected')
+else:
+  print('No relevant email found')
 
 # Example output:
 #
