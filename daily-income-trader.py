@@ -95,19 +95,19 @@ if (n_emails == 1):
   stop_loss_price = 0.0 
 
   for line in text_body.splitlines():
-    match = re.search('Today’s Daily Market Profit Alerts is \\$([A-z]+)', line) 
+    match = re.search(r"Today’s Daily Market Profit Alerts is \$([A-z]+)", line)
     if match:
       ticker = match.group(1)
 
-    match = re.search('^Signal Price: \\$([0-9.])', line)
+    match = re.search(r"^Signal Price:.*\$(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
       signal_price = float(match.group(1))
 
-    match = re.search('^Target Price: \\$([0-9.])', line)
+    match = re.search(r"^Target Price:.*\$(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
       target_price = float(match.group(1))
 
-    match = re.search('^Stop Loss Price: \\$([0-9.])', line)
+    match = re.search(r"^Stop Loss Price:.*\$(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
       stop_loss_price = float(match.group(1))
 
