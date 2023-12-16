@@ -19,14 +19,39 @@ e. pyenv global 3.9.2
 2. Install postgres
 a. brew install postgresql
 
-3. Instally pip libraries
+3. Setup database env variables
+* DIT_DB_NAME=
+* DIT_DB_USERNAME=
+* DIT_DB_PASSWORD=
+
+4. Setup Database (replace DIT_DB_USERNAME and DIT_DB_PASSWORD and DIT_DB_NAME with actual values)
+a. psql postgres
+b. CREATE ROLE DIT_DB_USERNAME WITH LOGIN PASSWORD DIT_DB_PASSWORD;
+c. exit;
+d. psql postgres -U DIT_DB_USERNAME
+e. CREATE DATABASE DIT_DB_NAME;
+f. GRANT ALL PRIVILEGES ON DATABASE DIT_DB_NAME TO DIT_DB_USERNAME;
+
+4. Install pip libraries
 
 a. pip install --upgrade pip
 b. pip install jmapc
+c. pip install django
 
-Setup the following environment variables (Examples given for fastmail):
+5. Setup the following environment variables (Examples given for fastmail):
 
 * JMAP_HOST=api.fastmail.com
 * JMAP_API_TOKEN_DIT= (your fastmail token)
 * JMAP_FOLDER_NAME_DIT= (the folder name to check)
 
+6. Apply database migrations:
+a. python manage.py migrate
+
+==============
+
+To create a new model/migration:
+1. Add model to db/models.py
+2. Run: python manage.py makemigrations db
+
+To apply migration:
+1. Run: python manage.py migrate

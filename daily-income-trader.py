@@ -28,6 +28,8 @@ from jmapc.models import (
     MailboxQueryFilterCondition,
 )
 
+from db.models import Order
+
 client = Client.create_with_api_token(
     host=os.environ["JMAP_HOST"], api_token=os.environ["JMAP_API_TOKEN_DIT"]
 )
@@ -117,6 +119,34 @@ if (n_emails == 1):
     print(f"Signal Price: ${signal_price}")
     print(f"Target Price: ${target_price}")
     print(f"Stop Loss Price: ${stop_loss_price}")
+
+    # Do some sanity checking to make sure the numbers are reasonable.
+    profit_difference = target_price - signal_price
+    stop_loss_difference = signal_price - stop_loss_price
+
+    MINIMUM_RISK_TO_REWARD_RATIO = 2
+    risk_to_reward_ratio = profit_difference / stop_loss_difference
+    exceeds_target_risk_to_reward_ratio = risk_to_reward_ratio >= MINIMUM_RISK_TO_REWARD_RATIO
+
+    # TO DO: Add other criteria here:
+    okay_to_write_to_database = exceeds_target_risk_to_reward_ratio
+
+    if okay_to_write_to_database:
+      print('okay to write to database')
+      today = datetime.today()
+
+      matching_orders = Order.objects.filter(ticker=ticker, date=today)
+
+      if matching_orders.count() == 0:
+        print('creating order')
+        order = Order(
+          date=today,
+          ticker=ticker,
+          signal_price=signal_price,
+          target_price=target_price,
+          stop_loss_price=stop_loss_price
+        ) 
+        order.save()
 
 elif (n_emails > 0):
   print('Found more emails than expected')

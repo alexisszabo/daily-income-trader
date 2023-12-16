@@ -16,5 +16,10 @@ class Model(models.Model):
         abstract = True
 
 # define models here
-# class Post(Model):
-#    ...
+class Order(Model):
+    date=models.DateField()
+    is_submitted=models.BooleanField(default=False)
+    signal_price = models.DecimalField(decimal_places=2, max_digits=8)
+    stop_loss_price = models.DecimalField(decimal_places=2, max_digits=8)
+    target_price = models.DecimalField(decimal_places=2, max_digits=8)
+    ticker = models.CharField(max_length=5)

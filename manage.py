@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-
 # https://abdus.dev/posts/django-orm-standalone/
+
+import os
 
 def init_django():
     import django
@@ -16,9 +17,9 @@ def init_django():
         DATABASES={
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
-                'NAME': 'myapp',
-                'USER': 'myapp_user',
-                'PASSWORD': 'myapp',
+                'NAME': os.environ["DIT_DB_NAME"],
+                'USER': os.environ["DIT_DB_USERNAME"],
+                'PASSWORD': os.environ["DIT_DB_PASSWORD"],
                 'HOST': '127.0.0.1',
                 'PORT': '5432',
             }
