@@ -41,7 +41,13 @@ if (n_emails == 1):
     if match:
       stop_loss_price = float(match.group(1))
 
-  if ticker != '' and signal_price > 0 and target_price > 0 and stop_loss_price > 0:
+  if (
+       ticker != '' and
+       signal_price > 0 and
+       target_price > 0 and
+       stop_loss_price > 0 and
+       stop_loss_price < signal_price < target_price
+     ):
     print("Parsed Today's Daily Profits Alert Email")
     print(f"Ticker: ${ticker}")
     print(f"Signal Price: ${signal_price}")
