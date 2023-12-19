@@ -35,6 +35,7 @@ d. GRANT ALL PRIVILEGES ON DATABASE DIT_DB_NAME TO DIT_DB_USERNAME;
 a. pip install --upgrade pip
 b. pip install jmapc
 c. pip install django
+d. pip install setuptools
 
 5. Setup the following environment variables (Examples given for fastmail):
 
@@ -44,6 +45,10 @@ c. pip install django
 
 6. Apply database migrations:
 a. python manage.py migrate
+
+7. Download and setup twsapi
+a. Download: https://interactivebrokers.github.io/#
+b. Install and Setup: https://ibkrcampus.com/ibkr-api-page/trader-workstation-api/ 
 
 ==============
 
