@@ -68,4 +68,4 @@ def get_emails_after(client: Client, mailbox: str, date: datetime) -> EmailGetRe
   ]
   results = client.request(methods)
   assert isinstance(results[1].response, EmailGetResponse)
-  return results[1].response
+  return results[1].response.data

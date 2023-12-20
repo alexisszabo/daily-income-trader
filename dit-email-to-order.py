@@ -7,20 +7,28 @@ from mail import (
   get_mail_client,
   get_emails_after
 )
+from jmapc import Email
 
 def main():
   client = get_mail_client(os.environ["JMAP_HOST"], os.environ["JMAP_API_TOKEN_DIT"])
   mailbox = get_mailbox(client, os.environ["JMAP_FOLDER_NAME_DIT"])
   emails = get_emails_after(client, mailbox, dt.datetime.today())
-  # emails = get_emails_after(client, mailbox, dt.datetime(2023, 12, 12))
+  #emails = get_emails_after(client, mailbox, dt.datetime(2023, 12, 12))
 
-  n_emails = len(emails.data)
+  for email in emails:
+    print(email)
+    print(email.subject)
+    match = re.search(r"Tim Bohen's Daily Market Profits Alert - (12/20/23)", email.subject)
+    if not match:
+      print(f"email.subject '{email.subject}' did not match")
+      continue 
+    date = dt.datetime.strptime(match.group(1), "%m/%d/%y") 
+    if dt.datetime.today().date() != date.date():
+      print("Date did not match ()")
+      continue
+    process_email(email)
 
-  if (n_emails != 1):
-    print("Found {n_emails} emails, but expected 1")
-    return
-
-  email = emails.data[0]
+def process_email(email: Email):
   text_body = email.body_values['1'].value
 
   ticker = ''
@@ -71,7 +79,9 @@ def main():
   exceeds_target_risk_to_reward_ratio = risk_to_reward_ratio >= MINIMUM_RISK_TO_REWARD_RATIO
 
   # TO DO: Add other criteria here:
-  values_seem_reasonable = exceeds_target_risk_to_reward_ratio
+  values_seem_reasonable = (
+    exceeds_target_risk_to_reward_ratio
+  )
 
   if not values_seem_reasonable:
     return
