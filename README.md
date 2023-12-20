@@ -36,6 +36,7 @@ a. pip install --upgrade pip
 b. pip install jmapc
 c. pip install django
 d. pip install setuptools
+e. pip install ib_insync
 
 5. Setup the following environment variables (Examples given for fastmail):
 
@@ -46,9 +47,7 @@ d. pip install setuptools
 6. Apply database migrations:
 a. python manage.py migrate
 
-7. Download and setup twsapi
-a. Download: https://interactivebrokers.github.io/#
-b. Install and Setup: https://ibkrcampus.com/ibkr-api-page/trader-workstation-api/ 
+7. Configure TWS for trading: https://ibkrcampus.com/ibkr-api-page/trader-workstation-api/#tws-config
 
 ==============
 
