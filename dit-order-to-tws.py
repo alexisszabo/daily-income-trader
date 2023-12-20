@@ -1,0 +1,88 @@
+# 1. Read order from database (only those that match the current day, and are not yet submitted)
+# 2. For each order:
+#   a. Query Account to get balance
+#   b. Calculate sizes (if balance available)
+#   c. Place Order
+from db.models import Order as OrderDb
+import datetime as dt
+from ib_insync import *
+import math
+import os
+from signal import signal, SIGINT
+from sys import exit
+import time
+from decimal import Decimal
+
+is_paper_trading = True
+max_loss_per_trade_in_percent = 2
+HOST_IP="127.0.0.1"
+ib = IB()
+
+def main():
+  if is_paper_trading:
+    port = 7497
+    account_name = os.environ["TWS_PAPER_ACCOUNT_NAME_DIT"]
+  else:
+    raise Exception("you're not ready for the real account yet!")
+    port = 7496
+    account_name = os.environ["TWS_LIVE_ACCOUNT_NAME_DIT"]
+
+  ib.connect(HOST_IP, port, clientId=1)
+
+  while True:
+    poll_db_and_submit_orders(ib, account_name)
+
+def poll_db_and_submit_orders(ib, account_name):
+  while True:
+    # Retrieve Orders from Database
+    today = dt.datetime.today()
+    orders_to_submit = OrderDb.objects.filter(date=today, is_submitted=False)
+    if orders_to_submit.count() >= 1:
+      break
+    time.sleep(1) 
+
+  for order_db in orders_to_submit:
+    # Retrieve balances from account
+    account_values = ib.accountValues(account_name)
+    net_liquidation = Decimal(get_value_from_account_value(account_values, 'NetLiquidationByCurrency', 'USD'))
+    # cash_balance = get_value_from_account_value(account_values, "CashBalance", "USD")
+
+    # Calculate size
+    stop_loss_amount = order_db.signal_price - order_db.stop_loss_price
+    max_loss = net_liquidation * max_loss_per_trade_in_percent / 100
+    size = int(math.floor(max_loss / stop_loss_amount))
+    
+    # If the amount of available cash is not enough, make the size smaller
+    # if (size * order.signal_price) > cash_balance:
+    #  size = math.floor(cash_balance / order.signal_price) 
+
+    # Generate Order
+    limit_price = int(order_db.signal_price * Decimal(1.02)*100)/100
+    stop_limit_order = StopLimitOrder('BUY', size, limit_price, order_db.signal_price) 
+    take_profit_order = LimitOrder('SELL', size, order_db.target_price)
+    stop_loss_order = StopOrder('SELL', size, order_db.stop_loss_price)
+    bracket_order = BracketOrder(stop_limit_order, take_profit_order, stop_loss_order)
+
+    # Place Order
+    contract = Stock(order_db.ticker,'SMART','USD')
+    for order in bracket_order:
+      print(order)
+      ib.placeOrder(contract, order) 
+      order_db.is_submitted = True
+      order_db.save()
+
+def get_value_from_account_value(account_values: AccountValue, name, currency='USD'):
+  for account_value in account_values:
+    if account_value.tag == name and account_value.currency == currency:
+      return account_value.value
+  return None
+
+def handler(signal_received, frame):
+    # Handle any cleanup here
+    print('Disconnecting from TWS...')
+    ib.disconnect()
+    exit(0)
+
+if __name__ == "__main__":
+  signal(SIGINT, handler)
+  main()
