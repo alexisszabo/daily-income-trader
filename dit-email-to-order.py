@@ -1,6 +1,7 @@
 import os
 import re
 import datetime as dt
+import time
 from db.models import Order
 from mail import (
   get_mailbox,
@@ -10,6 +11,21 @@ from mail import (
 from jmapc import Email
 
 def main():
+  date_last_order_placed = None
+
+  print("Waiting for Email...")
+  while True:
+    today = dt.datetime.today().date()
+    if date_last_order_placed != today:
+      now = dt.datetime.now().time()
+      time_window_start = dt.time(6, 0, 0)
+      time_window_end = dt.time(8, 0, 0)
+      if time_window_start > now > time_window_end:
+        check_for_new_emails()
+
+    time.sleep(60)
+
+def check_for_new_emails():
   client = get_mail_client(os.environ["JMAP_HOST"], os.environ["JMAP_API_TOKEN_DIT"])
   mailbox = get_mailbox(client, os.environ["JMAP_FOLDER_NAME_DIT"])
   emails = get_emails_after(client, mailbox, dt.datetime.today())
@@ -64,6 +80,7 @@ def process_email(email: Email):
   if not parsed_values_seem_reasonable:
     return
 
+  print("-------------------")
   print("Parsed Today's Daily Profits Alert Email")
   print(f"Ticker: ${ticker}")
   print(f"Signal Price: ${signal_price}")
@@ -86,7 +103,7 @@ def process_email(email: Email):
   if not values_seem_reasonable:
     return
 
-  today = dt.datetime.today()
+  today = dt.datetime.today().day()
 
   matching_orders = Order.objects.filter(ticker=ticker, date=today)
 
@@ -102,6 +119,7 @@ def process_email(email: Email):
     stop_loss_price=stop_loss_price
   ) 
   order.save()
+  date_last_order_placed = today
 
 if __name__ == "__main__":
   main()
