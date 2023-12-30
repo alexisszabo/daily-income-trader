@@ -52,7 +52,10 @@ e. pip install ib_insync
 6. Apply database migrations:
 a. python manage.py migrate
 
-7. Configure TWS for trading: https://ibkrcampus.com/ibkr-api-page/trader-workstation-api/#tws-config
+7. Setup TWS
+a. Install Offline TWS Stable Version (Offline version needed for IBC)
+b. Configure TWS for trading: https://ibkrcampus.com/ibkr-api-page/trader-workstation-api/#tws-config
+c. Download and configure IBC: https://github.com/IbcAlpha/IBC
 
 ## Misc
 
