@@ -32,9 +32,7 @@ def check_for_new_emails():
   #emails = get_emails_after(client, mailbox, dt.datetime(2023, 12, 12))
 
   for email in emails:
-    print(email)
-    print(email.subject)
-    match = re.search(r"Tim Bohen's Daily Market Profits Alert - (12/20/23)", email.subject)
+    match = re.search(r"Tim Bohen's Daily Market Profits Alert - ([0-9]+/[0-9]+/[0-9]+)", email.subject)
     if not match:
       print(f"email.subject '{email.subject}' did not match")
       continue 
