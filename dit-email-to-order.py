@@ -10,19 +10,18 @@ from mail import (
 )
 from jmapc import Email
 
-def main():
-  date_last_order_placed = None
+date_last_order_placed = None
 
+def main():
   print("Waiting for Email...")
   while True:
     today = dt.datetime.today().date()
     if date_last_order_placed != today:
       now = dt.datetime.now().time()
       time_window_start = dt.time(6, 0, 0)
-      time_window_end = dt.time(8, 0, 0)
-      if time_window_start > now > time_window_end:
+      time_window_end = dt.time(7, 0, 0)
+      if time_window_start < now < time_window_end:
         check_for_new_emails()
-
     time.sleep(60)
 
 def check_for_new_emails():
@@ -101,7 +100,7 @@ def process_email(email: Email):
   if not values_seem_reasonable:
     return
 
-  today = dt.datetime.today().day()
+  today = dt.datetime.today()
 
   matching_orders = Order.objects.filter(ticker=ticker, date=today)
 
@@ -117,7 +116,8 @@ def process_email(email: Email):
     stop_loss_price=stop_loss_price
   ) 
   order.save()
-  date_last_order_placed = today
+  global date_last_order_placed
+  date_last_order_placed = dt.datetime.today().date()
 
 if __name__ == "__main__":
   main()
