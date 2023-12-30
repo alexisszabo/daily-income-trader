@@ -28,19 +28,26 @@ def main():
     port = 7496
     account_name = os.environ["TWS_LIVE_ACCOUNT_NAME_DIT"]
 
-  ib.connect(HOST_IP, port, clientId=1)
-
   while True:
-    poll_db_and_submit_orders(ib, account_name)
+    if ib.isConnected():
+      submit_pending_orders(account_name)
+    time.sleep(10)
 
-def poll_db_and_submit_orders(ib, account_name):
-  while True:
-    # Retrieve Orders from Database
-    today = dt.datetime.today()
-    orders_to_submit = OrderDb.objects.filter(date=today, is_submitted=False)
-    if orders_to_submit.count() >= 1:
-      break
-    time.sleep(1) 
+def connect_if_needed(port):
+  if not ib.isConnected():
+    ib.disconnect()
+    try:
+      ib.connect(HOST_IP, port, clientId=1)
+      print("Connected!")
+    except OSError:
+      print("Connection Failed. Will Retry.")
+
+def submit_pending_orders(account_name):
+  # Retrieve Orders from Database
+  today = dt.datetime.today()
+  orders_to_submit = OrderDb.objects.filter(date=today, is_submitted=False)
+  if orders_to_submit.count() < 1:
+    return 
 
   for order_db in orders_to_submit:
     # Retrieve balances from account
