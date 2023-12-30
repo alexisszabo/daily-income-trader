@@ -19,6 +19,7 @@ HOST_IP="127.0.0.1"
 ib = IB()
 
 def main():
+  ib.errorEvent += on_error
   if is_paper_trading:
     port = 7497
     account_name = os.environ["TWS_PAPER_ACCOUNT_NAME_DIT"]
@@ -82,6 +83,12 @@ def handler(signal_received, frame):
     print('Disconnecting from TWS...')
     ib.disconnect()
     exit(0)
+
+def on_error(self, reqId, errorCode, errorString):
+  print(self)
+  print(reqId)
+  print(errorCode)
+  print(errorString)
 
 if __name__ == "__main__":
   signal(SIGINT, handler)
