@@ -75,15 +75,15 @@ def process_email(email: Email):
     stop_loss_price < signal_price < target_price
   )
 
-  if not parsed_values_seem_reasonable:
-    return
-
   print("-------------------")
   print("Parsed Today's Daily Profits Alert Email")
   print(f"Ticker: ${ticker}")
   print(f"Signal Price: ${signal_price}")
   print(f"Target Price: ${target_price}")
   print(f"Stop Loss Price: ${stop_loss_price}")
+
+  if not parsed_values_seem_reasonable:
+    return
 
   # Do some sanity checking to make sure the numbers are reasonable.
   profit_difference = target_price - signal_price
