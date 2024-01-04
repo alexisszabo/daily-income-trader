@@ -67,18 +67,40 @@ def submit_pending_orders(account_name):
 
     # Generate Order
     limit_price = int(order_db.signal_price * Decimal(1.02)*100)/100
-    stop_limit_order = StopLimitOrder('BUY', size, limit_price, order_db.signal_price) 
-    take_profit_order = LimitOrder('SELL', size, order_db.target_price)
-    stop_loss_order = StopOrder('SELL', size, order_db.stop_loss_price)
-    bracket_order = BracketOrder(stop_limit_order, take_profit_order, stop_loss_order)
+    stop_limit_order = StopLimitOrder(
+      'BUY', size, limit_price, order_db.signal_price,
+      orderId=ib.client.getReqId(),
+      transmit=False
+      ) 
+    take_profit_order = LimitOrder(
+      'SELL', size, order_db.target_price,
+      orderId=ib.client.getReqId(),
+      parentId=stop_limit_order.orderId,
+      transmit=False
+      )
+    stop_loss_order = StopOrder(
+      'SELL', size, order_db.stop_loss_price,
+      orderId=ib.client.getReqId(),
+      parentId=stop_limit_order.orderId,
+      transmit=False
+      )
+    time_to_sell = f"{dt.datetime.today().strftime("%Y%m%d")} 15:50:00 US/Eastern"
+    sell_at_end_of_day_order = MarketOrder(
+      'SELL', size,
+       conditions = [TimeCondition(isMore=True, time=time_to_sell)],
+       orderId=ib.client.getReqId(),
+       parentId=stop_limit_order.orderId,
+       transmit=True
+    )
 
     # Place Order
     contract = Stock(order_db.ticker,'SMART','USD')
-    for order in bracket_order:
+    print("Placing Orders:")
+    for order in [stop_limit_order, take_profit_order, stop_loss_order, sell_at_end_of_day_order]:
       print(order)
-      ib.placeOrder(contract, order) 
-      order_db.is_submitted = True
-      order_db.save()
+      ib.placeOrder(contract, order)
+    order_db.is_submitted = True
+    order_db.save()
 
 def get_value_from_account_value(account_values: AccountValue, name, currency='USD'):
   for account_value in account_values:
