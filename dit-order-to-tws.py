@@ -29,6 +29,7 @@ def main():
     account_name = os.environ["TWS_LIVE_ACCOUNT_NAME_DIT"]
 
   while True:
+    connect_if_needed(port)
     if ib.isConnected():
       submit_pending_orders(account_name)
     time.sleep(10)
