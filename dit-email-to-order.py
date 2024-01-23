@@ -61,6 +61,8 @@ def process_email(email: Email):
     match = re.search(r"^Target Price:.*\$(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
       target_price = float(match.group(1))
+      if (target_price % 1 == 0 and re.search("high", line, re.IGNORECASE)):
+        target_price += 0.80
 
     match = re.search(r"^Stop Loss Price:.*\$(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
