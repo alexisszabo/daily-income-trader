@@ -76,7 +76,8 @@ def submit_pending_orders(account_name):
       'SELL', size, order_db.target_price,
       orderId=ib.client.getReqId(),
       parentId=stop_limit_order.orderId,
-      transmit=False
+      usePriceMgmtAlgo=False,
+      transmit=False,
       )
     stop_loss_order = StopOrder(
       'SELL', size, order_db.stop_loss_price,
