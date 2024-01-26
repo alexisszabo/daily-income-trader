@@ -96,7 +96,8 @@ def submit_pending_orders(account_name):
 
     # Place Order
     contract = Stock(order_db.ticker,'SMART','USD')
-    print("Placing Orders:")
+    print("------------------------")
+    print(f"Placing {order_db.ticker} Orders")
     for order in [stop_limit_order, take_profit_order, stop_loss_order, sell_at_end_of_day_order]:
       print(order)
       ib.placeOrder(contract, order)
