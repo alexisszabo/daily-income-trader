@@ -19,7 +19,7 @@ def main():
     if date_last_order_placed != today:
       now = dt.datetime.now().time()
       time_window_start = dt.time(6, 0, 0)
-      time_window_end = dt.time(7, 0, 0)
+      time_window_end = dt.time(8, 0, 0)
       if time_window_start < now < time_window_end:
         check_for_new_emails()
     time.sleep(60)
