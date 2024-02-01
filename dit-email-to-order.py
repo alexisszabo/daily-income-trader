@@ -84,6 +84,7 @@ def process_email(email: Email):
   print(f"Stop Loss Price: ${stop_loss_price}")
 
   if not parsed_values_seem_reasonable:
+    print("*** Skipping. Parsed numbers do not seem reasonable")
     return
 
   # Do some sanity checking to make sure the numbers are reasonable.
@@ -94,12 +95,8 @@ def process_email(email: Email):
   risk_to_reward_ratio = profit_difference / stop_loss_difference
   exceeds_target_risk_to_reward_ratio = risk_to_reward_ratio >= MINIMUM_RISK_TO_REWARD_RATIO
 
-  # TO DO: Add other criteria here:
-  values_seem_reasonable = (
-    exceeds_target_risk_to_reward_ratio
-  )
-
-  if not values_seem_reasonable:
+  if not exceeds_target_risk_to_reward_ratio:
+    print(f"*** Skipping. Does not exceed target risk to reward ratio of {MINIMUM_RISK_TO_REWARD_RATIO}")
     return
 
   today = dt.datetime.today()
@@ -107,9 +104,10 @@ def process_email(email: Email):
   matching_orders = Order.objects.filter(ticker=ticker, date=today)
 
   if matching_orders.count() > 0:
+    print("Order already created")
     return
 
-  print('creating order')
+  print('*** Creating Order!')
   order = Order(
     date=today,
     ticker=ticker,
