@@ -54,17 +54,17 @@ def process_email(email: Email):
     if match:
       ticker = match.group(1)
 
-    match = re.search(r"^Signal Price:.*\$(([0-9]+)(\.[0-9]+)?).*$", line)
+    match = re.search(r"Signal Price:.*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
       signal_price = float(match.group(1))
 
-    match = re.search(r"^Target Price:.*\$(([0-9]+)(\.[0-9]+)?).*$", line)
+    match = re.search(r"Target Price:.*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
       target_price = float(match.group(1))
       if (target_price % 1 == 0 and re.search("high", line, re.IGNORECASE)):
         target_price += 0.80
 
-    match = re.search(r"^Stop Loss Price:.*\$(([0-9]+)(\.[0-9]+)?).*$", line)
+    match = re.search(r"Stop Loss Price:.*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
       stop_loss_price = float(match.group(1))
 
