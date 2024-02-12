@@ -53,22 +53,28 @@ def submit_pending_orders(account_name):
   for order_db in orders_to_submit:
     # Retrieve balances from account
     account_values = ib.accountValues(account_name)
+    # Net Liquidation is the total value of the account, including unsettled trades
     net_liquidation = Decimal(get_value_from_account_value(account_values, 'NetLiquidationByCurrency', 'USD'))
-    # cash_balance = get_value_from_account_value(account_values, "CashBalance", "USD")
+    # Cash balance is the actual cash available in the account for buying
+    cash_balance = Decimal(get_value_from_account_value(account_values, "CashBalance", "USD"))
 
     # Calculate size
+    # This is based on the max loss of the account (based on net liquidation)
     stop_loss_amount = order_db.signal_price - order_db.stop_loss_price
     max_loss = net_liquidation * max_loss_per_trade_in_percent / 100
     size = int(math.floor(max_loss / stop_loss_amount))
     
-    # If the amount of available cash is not enough, make the size smaller
-    # if (size * order.signal_price) > cash_balance:
-    #  size = math.floor(cash_balance / order.signal_price) 
+    # If the amount of available cash is not enough for the size, make the size smaller (based on cash balance)
+    # Technically I should be using the limit_price, but since this is a margin account, the discreplancy should be fine.
+    if (size * order_db.signal_price) > cash_balance:
+      size = int(math.floor(cash_balance / order.signal_price))
+
+    # Allow for some slippage for the case of fast-moving stocks
+    buy_limit_price = int(order_db.signal_price * Decimal(1.02)*100)/100
 
     # Generate Order
-    limit_price = int(order_db.signal_price * Decimal(1.02)*100)/100
     stop_limit_order = StopLimitOrder(
-      'BUY', size, limit_price, order_db.signal_price,
+      'BUY', size, buy_limit_price, order_db.signal_price,
       orderId=ib.client.getReqId(),
       transmit=False
       ) 
