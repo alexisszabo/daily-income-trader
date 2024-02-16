@@ -46,11 +46,11 @@ def connect_if_needed(port):
 def submit_pending_orders(account_name):
   # Retrieve Orders from Database
   today = dt.datetime.today()
-  orders_to_submit = OrderDb.objects.filter(date=today, is_submitted=False)
-  if orders_to_submit.count() < 1:
+  orders_to_process = OrderDb.objects.filter(date=today, is_processed=False)
+  if orders_to_process.count() < 1:
     return 
 
-  for order_db in orders_to_submit:
+  for order_db in orders_to_process:
     # Retrieve balances from account
     account_values = ib.accountValues(account_name)
     # Net Liquidation is the total value of the account, including unsettled trades
@@ -107,6 +107,7 @@ def submit_pending_orders(account_name):
     for order in [stop_limit_order, take_profit_order, stop_loss_order, sell_at_end_of_day_order]:
       print(order)
       ib.placeOrder(contract, order)
+    order_db.is_processed = True
     order_db.is_submitted = True
     order_db.save()
 
