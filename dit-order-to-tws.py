@@ -77,7 +77,7 @@ def submit_pending_orders(account_name):
     if (order_db.signal_price > ticker.ask):
       order_db.is_processed = True
       order_db.save()
-      return
+      continue
 
     #######################
     ##### Place Order #####
