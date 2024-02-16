@@ -136,10 +136,10 @@ def get_ticker(contract: Stock, genericTickList="") -> Ticker:
   return ticker
 
 def handler(signal_received, frame):
-    # Handle any cleanup here
-    print('Disconnecting from TWS...')
-    ib.disconnect()
-    exit(0)
+  # Handle any cleanup here
+  print('Disconnecting from TWS...')
+  ib.disconnect()
+  exit(0)
 
 def on_error(self, reqId, errorCode, errorString):
   print(self)
