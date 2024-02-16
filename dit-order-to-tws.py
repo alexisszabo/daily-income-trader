@@ -69,6 +69,20 @@ def submit_pending_orders(account_name):
     if (size * order_db.signal_price) > cash_balance:
       size = int(math.floor(cash_balance / order.signal_price))
 
+    contract = Stock(order_db.ticker,'SMART','USD')
+
+    # Don't submit the order if the current price exceeds the signal price.
+    # This avoids submitting an order on a stock that already run and could be on it's way down now
+    ticker = get_ticker(contract)
+    if (order_db.signal_price > ticker.ask):
+      order_db.is_processed = True
+      order_db.save()
+      return
+
+    #######################
+    ##### Place Order #####
+    #######################
+
     # Allow for some slippage for the case of fast-moving stocks
     buy_limit_price = int(order_db.signal_price * Decimal(1.02)*100)/100
 
@@ -100,8 +114,6 @@ def submit_pending_orders(account_name):
        transmit=True
     )
 
-    # Place Order
-    contract = Stock(order_db.ticker,'SMART','USD')
     print("------------------------")
     print(f"Placing {order_db.ticker} Orders")
     for order in [stop_limit_order, take_profit_order, stop_loss_order, sell_at_end_of_day_order]:
@@ -116,6 +128,12 @@ def get_value_from_account_value(account_values: AccountValue, name, currency='U
     if account_value.tag == name and account_value.currency == currency:
       return account_value.value
   return None
+
+def get_ticker(contract: Stock, genericTickList="") -> Ticker:
+  ticker = ib.reqMktData(contract, genericTickList, snapshot=True)
+  while math.isnan(ticker.ask):
+    ib.sleep(0.1)
+  return ticker
 
 def handler(signal_received, frame):
     # Handle any cleanup here
