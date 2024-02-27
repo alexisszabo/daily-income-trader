@@ -1,6 +1,7 @@
 import os
 import re
 import datetime as dt
+import math
 import time
 from db.models import Order
 from mail import (
@@ -11,6 +12,7 @@ from mail import (
 from jmapc import Email
 
 date_last_order_placed = None
+MINIMUM_RISK_TO_REWARD_RATIO = 2
 
 def main():
   print("Waiting for Email...")
@@ -63,6 +65,7 @@ def process_email(email: Email):
   signal_price = 0.0 
   target_price = 0.0
   stop_loss_price = 0.0 
+  target_has_the_word_high = False
 
   for line in text_body.splitlines():
     match = re.search(r"Today’s Daily Market Profit Alerts is \$([A-z]+)", line)
@@ -76,8 +79,8 @@ def process_email(email: Email):
     match = re.search(r"Target Price:[^$]*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
       target_price = float(match.group(1))
-      if (target_price % 1 == 0 and re.search("high", line, re.IGNORECASE)):
-        target_price += 0.80
+      if (target_price % 1 == 0 and re.search(r"high \$\s*" + match.group(1), line, re.IGNORECASE)):
+        target_has_the_word_high = True
 
     match = re.search(r"Stop Loss Price:.*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
     if match:
@@ -87,9 +90,18 @@ def process_email(email: Email):
     ticker != '' and
     signal_price > 0 and
     target_price > 0 and
-    stop_loss_price > 0 and
-    stop_loss_price < signal_price < target_price
+    stop_loss_price > 0
   )
+
+  # Calculate target price based on risk/reward ratio, and use that if it is in the $ range of the target
+  # ie. if the price could be in the "high $1", accept a target price anywhere between $1.00 and $1.99
+  if parsed_values_seem_reasonable and target_has_the_word_high:
+    risk = signal_price - stop_loss_price
+    reward = risk * MINIMUM_RISK_TO_REWARD_RATIO
+    potential_target = signal_price + reward
+    if (potential_target >= signal_price) and potential_target < (math.floor(signal_price) + 1):
+      print(f"Calculated target prices based on {MINIMUM_RISK_TO_REWARD_RATIO}:1 risk/reward ratio")
+      target_price = potential_target
 
   print("-------------------")
   print("Parsed Today's Daily Profits Alert Email")
@@ -97,6 +109,9 @@ def process_email(email: Email):
   print(f"Signal Price: ${signal_price}")
   print(f"Target Price: ${target_price}")
   print(f"Stop Loss Price: ${stop_loss_price}")
+
+  # More sanity checking
+  parsed_values_seem_reasonable = parsed_values_seem_reasonable and (stop_loss_price < signal_price < target_price)
 
   if not parsed_values_seem_reasonable:
     print("*** Skipping. Parsed numbers do not seem reasonable")
@@ -106,7 +121,6 @@ def process_email(email: Email):
   profit_difference = target_price - signal_price
   stop_loss_difference = signal_price - stop_loss_price
 
-  MINIMUM_RISK_TO_REWARD_RATIO = 2
   risk_to_reward_ratio = profit_difference / stop_loss_difference
   exceeds_target_risk_to_reward_ratio = risk_to_reward_ratio >= MINIMUM_RISK_TO_REWARD_RATIO
 
