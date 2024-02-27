@@ -20,6 +20,8 @@ ib = IB()
 
 def main():
   ib.errorEvent += on_error
+  ib.disconnectedEvent += on_disconnected
+  ib.timeoutEvent += on_timeout
   if is_paper_trading:
     port = 7497
     account_name = os.environ["TWS_PAPER_ACCOUNT_NAME_DIT"]
@@ -74,7 +76,9 @@ def submit_pending_orders(account_name):
     # Don't submit the order if the current price exceeds the signal price.
     # This avoids submitting an order on a stock that already run and could be on it's way down now
     ticker = get_ticker(contract)
-    if (order_db.signal_price > ticker.ask):
+    if (ticker.ask > order_db.signal_price):
+      print_new_section()
+      print(f"Skipping {order_db.ticker} as current price exceeds the signal price")
       order_db.is_processed = True
       order_db.save()
       continue
@@ -114,7 +118,7 @@ def submit_pending_orders(account_name):
        transmit=True
     )
 
-    print("------------------------")
+    print_new_section()
     print(f"Placing {order_db.ticker} Orders")
     for order in [stop_limit_order, take_profit_order, stop_loss_order, sell_at_end_of_day_order]:
       print(order)
@@ -135,17 +139,30 @@ def get_ticker(contract: Stock, genericTickList="") -> Ticker:
     ib.sleep(0.1)
   return ticker
 
+def print_new_section():
+  print("------------------------")
+  print(dt.datetime.now()) 
+
 def handler(signal_received, frame):
   # Handle any cleanup here
+  print_new_section()
   print('Disconnecting from TWS...')
   ib.disconnect()
   exit(0)
 
 def on_error(self, reqId, errorCode, errorString):
-  print(self)
-  print(reqId)
-  print(errorCode)
-  print(errorString)
+  print_new_section()
+  print(f"reqId: {reqId}")
+  print(f"errorCode: {errorCode}")
+  print(f"erroString: {errorString}")
+
+def on_disconnected():
+  print_new_section()
+  print("Disconnected!")
+
+def on_timeout(idlePeriod: float):
+  print_new_section()
+  print("Timeout!")
 
 if __name__ == "__main__":
   signal(SIGINT, handler)
