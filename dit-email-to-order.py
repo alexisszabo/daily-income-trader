@@ -31,14 +31,29 @@ def check_for_new_emails():
   #emails = get_emails_after(client, mailbox, dt.datetime(2023, 12, 12))
 
   for email in emails:
+    # Auto email from Tim Bohen
     match = re.search(r"Tim Bohen's Daily Market Profits Alert - ([0-9]+/[0-9]+/[0-9]+)", email.subject)
-    if not match:
+
+    # Manually sent emil from myself
+    match_manual = re.search(r"Daily Income Trader Manual Entry", email.subject)
+
+    if not match and not match_manual:
       print(f"email.subject '{email.subject}' did not match")
       continue 
-    date = dt.datetime.strptime(match.group(1), "%m/%d/%y") 
-    if dt.datetime.today().date() != date.date():
-      print("Date did not match ()")
-      continue
+
+    today = dt.datetime.today().date()
+
+    if match:
+      date = dt.datetime.strptime(match.group(1), "%m/%d/%y") 
+      if today != date.date():
+        print("Date did not match ()")
+        continue
+
+    if match_manual:
+      if email.date.date() != today:
+        print("Date did not match")
+        continue
+
     process_email(email)
 
 def process_email(email: Email):
