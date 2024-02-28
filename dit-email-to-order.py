@@ -7,7 +7,8 @@ from db.models import Order
 from mail import (
   get_mailbox,
   get_mail_client,
-  get_emails_after
+  get_unread_emails_after,
+  mark_email_as_read
 )
 from jmapc import Email
 
@@ -29,7 +30,7 @@ def main():
 def check_for_new_emails():
   client = get_mail_client(os.environ["JMAP_HOST"], os.environ["JMAP_API_TOKEN_DIT"])
   mailbox = get_mailbox(client, os.environ["JMAP_FOLDER_NAME_DIT"])
-  emails = get_emails_after(client, mailbox, dt.datetime.today())
+  emails = get_unread_emails_after(client, mailbox, dt.datetime.today())
   #emails = get_emails_after(client, mailbox, dt.datetime(2023, 12, 12))
 
   for email in emails:
@@ -57,6 +58,7 @@ def check_for_new_emails():
         continue
 
     process_email(email)
+    mark_email_as_read(client, email)
 
 def process_email(email: Email):
   text_body = email.body_values['1'].value

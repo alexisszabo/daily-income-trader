@@ -12,12 +12,14 @@ from jmapc.methods import (
     EmailGet,
     EmailGetResponse,
     EmailQuery,
+    EmailSet,
     MailboxGet,
     MailboxGetResponse,
     MailboxQuery,
 )
 
 from jmapc.models import (
+    Email,
     EmailQueryFilterCondition,
     MailboxQueryFilterCondition,
 )
@@ -51,14 +53,15 @@ def get_mailbox(client: Client, name: str) -> Mailbox:
   # single match for our query. Retrieve the first Mailbox from the list.
   return mailboxes[0]
 
-def get_emails_after(client: Client, mailbox: str, date: datetime) -> EmailGetResponse:
+def get_unread_emails_after(client: Client, mailbox: str, date: datetime) -> EmailGetResponse:
   # Only check for todays emails
   # Get the email
   methods = [
     EmailQuery(
       filter=EmailQueryFilterCondition(
         in_mailbox=mailbox.id,
-        after=date.replace(hour=0, minute=0, second=0)
+        after=date.replace(hour=0, minute=0, second=0),
+        not_keyword="$seen"
       )
     ),
     EmailGet(
@@ -69,3 +72,15 @@ def get_emails_after(client: Client, mailbox: str, date: datetime) -> EmailGetRe
   results = client.request(methods)
   assert isinstance(results[1].response, EmailGetResponse)
   return results[1].response.data
+
+def mark_email_as_read(client: Client, email: Email):
+  methods = [
+    EmailSet(
+      update={
+        email.id: {
+          "keywords/$seen": True
+        }
+      }
+    )
+  ]
+  results = client.request(methods)
