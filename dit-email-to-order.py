@@ -11,6 +11,7 @@ from mail import (
   mark_email_as_read
 )
 from jmapc import Email
+from decimal import Decimal
 
 date_last_order_placed = None
 MINIMUM_RISK_TO_REWARD_RATIO = 2
@@ -103,7 +104,7 @@ def process_email(email: Email):
     potential_target = signal_price + reward
     if (potential_target >= signal_price) and potential_target < (math.floor(signal_price) + 1):
       print(f"Calculated target prices based on {MINIMUM_RISK_TO_REWARD_RATIO}:1 risk/reward ratio")
-      target_price = potential_target
+      target_price = to_currency(potential_target)
 
   print("-------------------")
   print("Parsed Today's Daily Profits Alert Email")
@@ -149,6 +150,9 @@ def process_email(email: Email):
   order.save()
   global date_last_order_placed
   date_last_order_placed = dt.datetime.today().date()
+
+def to_currency(amount: float) -> Decimal:
+  return int(Decimal(amount)*100)/100
 
 if __name__ == "__main__":
   main()

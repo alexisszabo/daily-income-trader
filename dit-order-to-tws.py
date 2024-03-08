@@ -88,7 +88,7 @@ def submit_pending_orders(account_name):
     #######################
 
     # Allow for some slippage for the case of fast-moving stocks
-    buy_limit_price = int(order_db.signal_price * Decimal(1.02)*100)/100
+    buy_limit_price = to_currency(order_db.signal_price * 1.02)
 
     # Generate Order
     stop_limit_order = StopLimitOrder(
@@ -126,6 +126,9 @@ def submit_pending_orders(account_name):
     order_db.is_processed = True
     order_db.is_submitted = True
     order_db.save()
+
+def to_currency(amount: float) -> Decimal:
+  return int(Decimal(amount)*100)/100
 
 def get_value_from_account_value(account_values: AccountValue, name, currency='USD'):
   for account_value in account_values:
