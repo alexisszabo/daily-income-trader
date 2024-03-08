@@ -43,6 +43,7 @@ def check_for_new_emails():
 
     if not match and not match_manual:
       print(f"email.subject '{email.subject}' did not match")
+      mark_email_as_read(client, email)
       continue 
 
     today = dt.datetime.today().date()
