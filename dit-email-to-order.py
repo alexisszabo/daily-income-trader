@@ -97,6 +97,8 @@ def process_email(email: Email):
     stop_loss_price > 0
   )
 
+  print("-------------------")
+
   # Calculate target price based on risk/reward ratio, and use that if it is in the $ range of the target
   # ie. if the price could be in the "high $1", accept a target price anywhere between $1.00 and $1.99
   if parsed_values_seem_reasonable and target_has_the_word_high:
@@ -107,7 +109,6 @@ def process_email(email: Email):
       print(f"Calculated target prices based on {MINIMUM_RISK_TO_REWARD_RATIO}:1 risk/reward ratio")
       target_price = to_currency(potential_target)
 
-  print("-------------------")
   print("Parsed Today's Daily Profits Alert Email")
   print(f"Ticker: ${ticker}")
   print(f"Signal Price: ${signal_price}")
