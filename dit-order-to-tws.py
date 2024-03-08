@@ -78,7 +78,7 @@ def submit_pending_orders(account_name):
     ticker = get_ticker(contract)
     if (ticker.ask > order_db.signal_price):
       print_new_section()
-      print(f"Skipping {order_db.ticker} as current price exceeds the signal price")
+      print(f"Skipping {order_db.ticker} as current price (${ticker.ask}) exceeds the signal price $({order_db.ticker})")
       order_db.is_processed = True
       order_db.save()
       continue
