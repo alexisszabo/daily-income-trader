@@ -42,6 +42,7 @@ b. pip install jmapc
 c. pip install django
 d. pip install setuptools
 e. pip install ib_insync
+f. pip install psycopg
 
 6. Apply database migrations:
 a. python manage.py migrate
