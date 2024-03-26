@@ -18,8 +18,6 @@ def init_django():
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
                 'NAME': os.environ["DIT_DB_NAME"],
-                'USER': os.environ["DIT_DB_USERNAME"],
-                'PASSWORD': os.environ["DIT_DB_PASSWORD"],
                 'HOST': '127.0.0.1',
                 'PORT': '5432',
             }

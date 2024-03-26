@@ -22,8 +22,6 @@ a. brew install postgresql
 
 3. Setup environment variables
 - DIT_DB_NAME=
-- DIT_DB_USERNAME=
-- DIT_DB_PASSWORD=
 - JMAP_HOST=api.fastmail.com
 - JMAP_API_TOKEN_DIT= (your fastmail token)
 - JMAP_FOLDER_NAME_DIT= (the folder name to check)
