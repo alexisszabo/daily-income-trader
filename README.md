@@ -55,6 +55,7 @@ c. Download and configure IBC: https://github.com/IbcAlpha/IBC
 ## Misc
 
 ### Database
+https://abdus.dev/posts/django-orm-standalone/
 
 This project uses the django ORM.
 
