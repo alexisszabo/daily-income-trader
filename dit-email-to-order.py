@@ -138,7 +138,8 @@ def process_email(email: Email):
   exceeds_target_risk_to_reward_ratio = risk_to_reward_ratio >= MINIMUM_RISK_TO_REWARD_RATIO
 
   if not exceeds_target_risk_to_reward_ratio:
-    print(f"*** Skipping. Does not exceed target risk to reward ratio of {MINIMUM_RISK_TO_REWARD_RATIO}")
+    print(f"*** Skipping. Does not exceed target risk to reward ratio of {MINIMUM_RISK_TO_REWARD_RATIO}:1")
+    print(f"Actual risk to reward ratio: {risk_to_reward_ratio}:1")
     return
 
   today = dt.datetime.today()
