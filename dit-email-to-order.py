@@ -71,6 +71,7 @@ def process_email(email: Email):
   target_price = 0 
   stop_loss_price = 0 
   target_has_the_word_high = False
+  target_has_the_symbol_plus = False
 
   for line in text_body.splitlines():
     match = re.search(r"Today’s Daily Market Profit Alerts is \$([A-z]+)", line)
@@ -84,8 +85,11 @@ def process_email(email: Email):
     match = re.search(r"Target Price:[^$]*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
     if match is not None:
       target_price = float(match.group(1))
-      if (target_price % 1 == 0 and re.search(r"high \$\s*" + match.group(1), line, re.IGNORECASE)):
-        target_has_the_word_high = True
+      if (target_price % 1 == 0):
+        if re.search(r"high \$\s*" + match.group(1), line, re.IGNORECASE):
+          target_has_the_word_high = True
+        if re.search(r"\$\s*" + match.group(1) + r"\s*+", line, re.IGNORECASE):
+          target_has_the_symbol_plus = True
 
     match = re.search(r"Stop Loss Price:.*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
     if match is not None:
@@ -102,13 +106,16 @@ def process_email(email: Email):
 
   # Calculate target price based on risk/reward ratio, and use that if it is in the $ range of the target
   # ie. if the price could be in the "high $1", accept a target price anywhere between $1.00 and $1.99
-  if parsed_values_seem_reasonable and target_has_the_word_high:
+  if parsed_values_seem_reasonable and (target_has_the_word_high or target_has_the_symbol_plus):
     risk = signal_price - stop_loss_price
     reward = risk * MINIMUM_RISK_TO_REWARD_RATIO
     potential_target = signal_price + reward
-    if (potential_target >= signal_price) and potential_target < (math.floor(signal_price) + 1):
-      print(f"Calculated target prices based on {MINIMUM_RISK_TO_REWARD_RATIO}:1 risk/reward ratio")
-      target_price = to_currency(potential_target)
+
+    if potential_target >= target_price:
+      if ((target_has_the_word_high and potential_target < (math.floor(target_price) + 1)) or
+         (target_has_the_symbol_plus and potential_target < (math.floor(target_price) + 0.25))):
+        print(f"Calculated target prices based on {MINIMUM_RISK_TO_REWARD_RATIO}:1 risk/reward ratio")
+        target_price = potential_target
 
   print("Parsed Today's Daily Profits Alert Email")
   print(f"Ticker: ${ticker}")
