@@ -15,13 +15,7 @@
 
 ## Setup
 
-1. Setup Python:
-
-a. brew install pyenv
-b. pyenv install 3.12.0
-c. Follow instructions here to update shell: https://www.freecodecamp.org/news/python-version-on-mac-update/
-d. Start a new shell
-e. pyenv global 3.9.2
+1. Setup Python 3 with asdf: https://rednafi.com/python/install_python_with_asdf/
 
 2. Install postgres
 a. brew install postgresql
