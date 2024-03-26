@@ -65,3 +65,11 @@ To create a new model/migration:
 
 To apply migration:
 1. Run: python manage.py migrate
+
+### Useful jmap resources
+
+https://jmap.io/crash-course.html
+https://datatracker.ietf.org/doc/html/rfc8621
+
+### Discord Python API
+https://github.com/Rapptz/discord.py
