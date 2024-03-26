@@ -119,9 +119,9 @@ def process_email(email: Email):
 
   print("Parsed Today's Daily Profits Alert Email")
   print(f"Ticker: ${ticker}")
-  print(f"Signal Price: ${signal_price}")
-  print(f"Target Price: ${target_price}")
-  print(f"Stop Loss Price: ${stop_loss_price}")
+  print(f"Signal Price: ${formatted_currency(signal_price)}")
+  print(f"Target Price: ${formatted_currency(target_price)}")
+  print(f"Stop Loss Price: ${formatted_currency(stop_loss_price)}")
 
   # More sanity checking
   parsed_values_seem_reasonable = parsed_values_seem_reasonable and (stop_loss_price < signal_price < target_price)
@@ -161,8 +161,8 @@ def process_email(email: Email):
   global date_last_order_placed
   date_last_order_placed = dt.datetime.today().date()
 
-def to_currency(amount: float) -> Decimal:
-  return int(Decimal(amount)*100)/100
+def formatted_currency(num: float) -> str:
+  return '{:.2f}'.format(num)
 
 if __name__ == "__main__":
   main()
