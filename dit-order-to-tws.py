@@ -11,10 +11,11 @@ import os
 from signal import signal, SIGINT
 from sys import exit
 import time
-from decimal import Decimal
+from decimal import *
+getcontext().prec=2
 
 is_paper_trading = True
-max_loss_per_trade_in_percent = 2
+MAX_LOSS_PER_TRADE_IN_PERCENT = 2
 HOST_IP="127.0.0.1"
 ib = IB()
 
@@ -63,7 +64,7 @@ def submit_pending_orders(account_name):
     # Calculate size
     # This is based on the max loss of the account (based on net liquidation)
     stop_loss_amount = order_db.signal_price - order_db.stop_loss_price
-    max_loss = net_liquidation * max_loss_per_trade_in_percent / 100
+    max_loss = net_liquidation * MAX_LOSS_PER_TRADE_IN_PERCENT / 100
     size = int(math.floor(max_loss / stop_loss_amount))
     
     # If the amount of available cash is not enough for the size, make the size smaller (based on cash balance)
@@ -88,7 +89,7 @@ def submit_pending_orders(account_name):
     #######################
 
     # Allow for some slippage for the case of fast-moving stocks
-    buy_limit_price = to_currency(order_db.signal_price * 1.02)
+    buy_limit_price = order_db.signal_price * Decimal(1.02)
 
     # Generate Order
     stop_limit_order = StopLimitOrder(
@@ -126,9 +127,6 @@ def submit_pending_orders(account_name):
     order_db.is_processed = True
     order_db.is_submitted = True
     order_db.save()
-
-def to_currency(amount: float) -> Decimal:
-  return int(Decimal(amount)*100)/100
 
 def get_value_from_account_value(account_values: AccountValue, name, currency='USD'):
   for account_value in account_values:

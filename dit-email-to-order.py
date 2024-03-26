@@ -11,7 +11,8 @@ from mail import (
   mark_email_as_read
 )
 from jmapc import Email
-from decimal import Decimal
+from decimal import *
+getcontext().prec=2
 
 date_last_order_placed = None
 MINIMUM_RISK_TO_REWARD_RATIO = 2
@@ -66,9 +67,9 @@ def process_email(email: Email):
   text_body = email.body_values['1'].value
 
   ticker = ''
-  signal_price = 0.0 
-  target_price = 0.0
-  stop_loss_price = 0.0 
+  signal_price = 0 
+  target_price = 0 
+  stop_loss_price = 0 
   target_has_the_word_high = False
 
   for line in text_body.splitlines():
@@ -126,7 +127,7 @@ def process_email(email: Email):
   profit_difference = target_price - signal_price
   stop_loss_difference = signal_price - stop_loss_price
 
-  risk_to_reward_ratio = profit_difference / stop_loss_difference
+  risk_to_reward_ratio = round(profit_difference / stop_loss_difference, 1)
   exceeds_target_risk_to_reward_ratio = risk_to_reward_ratio >= MINIMUM_RISK_TO_REWARD_RATIO
 
   if not exceeds_target_risk_to_reward_ratio:
@@ -145,9 +146,9 @@ def process_email(email: Email):
   order = Order(
     date=today,
     ticker=ticker,
-    signal_price=signal_price,
-    target_price=target_price,
-    stop_loss_price=stop_loss_price
+    signal_price=Decimal(signal_price),
+    target_price=Decimal(target_price),
+    stop_loss_price=Decimal(stop_loss_price)
   ) 
   order.save()
   global date_last_order_placed
