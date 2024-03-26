@@ -42,20 +42,20 @@ def check_for_new_emails():
     # Manually sent emil from myself
     match_manual = re.search(r"Daily Income Trader Manual Entry", email.subject)
 
-    if not match and not match_manual:
+    if match is None and match_manual is None:
       print(f"email.subject '{email.subject}' did not match")
       mark_email_as_read(client, email)
       continue 
 
     today = dt.datetime.today().date()
 
-    if match:
+    if match is not None:
       date = dt.datetime.strptime(match.group(1), "%m/%d/%y") 
       if today != date.date():
         print("Date did not match ()")
         continue
 
-    if match_manual:
+    if match_manual is not None:
       if email.date.date() != today:
         print("Date did not match")
         continue
@@ -74,21 +74,21 @@ def process_email(email: Email):
 
   for line in text_body.splitlines():
     match = re.search(r"Today’s Daily Market Profit Alerts is \$([A-z]+)", line)
-    if match:
+    if match is not None:
       ticker = match.group(1)
 
     match = re.search(r"Signal Price:.*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
-    if match:
+    if match is not None:
       signal_price = float(match.group(1))
 
     match = re.search(r"Target Price:[^$]*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
-    if match:
+    if match is not None:
       target_price = float(match.group(1))
       if (target_price % 1 == 0 and re.search(r"high \$\s*" + match.group(1), line, re.IGNORECASE)):
         target_has_the_word_high = True
 
     match = re.search(r"Stop Loss Price:.*\$\s*(([0-9]+)(\.[0-9]+)?).*$", line)
-    if match:
+    if match is not None:
       stop_loss_price = float(match.group(1))
 
   parsed_values_seem_reasonable = (
